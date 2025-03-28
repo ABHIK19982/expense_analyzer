@@ -1,0 +1,59 @@
+
+{% extends "bootstrap/base.html" %}
+{% block html_attribs %} lang="en"{% endblock %}
+{% block head %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block styles -%}
+    {{super()}}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='main_page.css')}}">
+  {% endblock %}
+{% endblock %}
+
+{% block body %}
+{% with messages=get_flashed_messages(with_categories=true) %}
+ {% for category, message in messages %}
+  <div class='alert alert-{{category}} text-center alert-dismissible fade show m-auto'>
+    {{ message }}
+   </div>
+ {% endfor %}
+{% endwith %}
+  <h1>Monthly Expenses</h1>
+  <div class="menu-bar">
+        <a href="#add">Add</a>
+        <a href="#view">View</a>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Add an Expense</h2>
+            <form class="form-container" action="/add_expense/submit" method="POST">
+                <input type="date" name="expense_date" required>
+                <input type="text" name="commodity" placeholder="Object Name" required>
+                <input type="text" name="type" placeholder="Commodity Type" required>
+                <input type="number" name="price" placeholder="Price" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
+         <div class="section">
+            <h2>View Expense Reports</h2>
+            <div class="btn-container">
+                {% for f in months %}
+                    <form action="/view_expense/{{ f }}" method="post">
+                    <button class="btn" type="submit">{{ f }}</button>
+                    </form>
+                {% endfor %}
+            </div>
+
+            <div class="date-range">
+                <label><strong>Date Range</strong></label>
+                <form action="/view_expense/date_range" method="post">
+                    <input type="date" name="start_date" required>
+                    <input type="date" name="end_date" required>
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
