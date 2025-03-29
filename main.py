@@ -21,7 +21,7 @@ def get_expense():
     df = query_dynamodb(dt)
     if isinstance(df,int) and df == -1:
         flash("No records found","warning")
-        return render_template("main_page.html")
+        return render_template("main_page.html",months = app.config['MONTH_LIST'])
     else:
         print(df.head())
         graphs = generate_graphs(df)
@@ -30,7 +30,8 @@ def get_expense():
                            columns=df.columns,
                            data=list(df.values),
                            expense_graph = graphs[0],
-                           count_graph = graphs[1])
+                           count_graph = graphs[1],
+                           trend_graph = graphs[2])
 
 
 @app.route("/view_expense/<month>", methods=['GET','POST'])

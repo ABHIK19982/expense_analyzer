@@ -19,25 +19,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in data %}
-                        <tr>
-                        {% for dt in row %}
-                            <td>{{ dt }}</td>
-                        {% endfor %}
-                        </tr>
-                        {% endfor %}
+{% for row in data %}
+    {% if loop.index == (data|length - 1) %}
+        <tr>
+        {% for dt in row %}
+            <td style="border-top: 2px solid black">{{ dt }}</td>
+        {% endfor %}
+        </tr>
+    {% else %}
+        <tr>
+        {% for dt in row %}
+            <td>{{ dt }}</td>
+        {% endfor %}
+        </tr>
+    {% endif %}
+{% endfor %}
                 </tbody>
             </table>
         </div>
 
         <div class="graph-container">
-            <div class="sub-graph-container">
-                <h2 class="graph-title">Expense Distribution by Category</h2>
-                <img src="data:image/png;base64,{{ expense_graph }}" alt="Expense Distribution">
+            <div class="graph-row">
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Expense Distribution</h2>
+                    <img src="data:image/png;base64,{{ expense_graph }}" alt="Expense Distribution">
+                </div>
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Small Expense Distribution </h2>
+                    <img src="data:image/png;base64,{{ count_graph }}" alt="Transaction Count">
+                </div>
             </div>
-            <div class="sub-graph-container">
-                <h2 class="graph-title">Transaction Count by Category</h2>
-                <img src="data:image/png;base64,{{ count_graph }}" alt="Transaction Count">
+            <div class="graph-row full-width">
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Trend Analysis</h2>
+                    <img src="data:image/png;base64,{{ trend_graph }}" alt="Trend Analysis">
+                </div>
             </div>
         </div>
     </div>
