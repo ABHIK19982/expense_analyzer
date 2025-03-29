@@ -1,3 +1,5 @@
+import textwrap
+
 import boto3
 from datetime import date
 from calendar import month_name
@@ -92,17 +94,17 @@ def generate_graphs(df):
     total_count = sum(count_per_type)
     count_per_type = [round(i / total_count * 100, 2) for i in count_per_type]
 
-    labels = commodity_types
-    fig = Figure(figsize=(6.5,4))
+    labels = [textwrap.fill(text, width = 10) for text in commodity_types]
+    fig = Figure(figsize=(5,5))
     ax = fig.subplots(1,1,)
     ax.pie(total_expense,
             explode = [0.1 if i == 0 else 0 for i in range(len(commodity_types))],
             labels=labels,
             autopct='%1.1f%%',
             shadow=True,
-            startangle=0)
+            startangle=90)
 
-    ax.set_title('Total Expense per Commodity Type')
+    #ax.set_title('Total Expense per Commodity Type')
     ax.axis('off')
     buf1 = BytesIO()
     fig.patch.set_alpha(0)
@@ -111,7 +113,7 @@ def generate_graphs(df):
     total_expense_data = base64.b64encode(buf1.getbuffer()).decode("ascii")
     #print(total_expense_data)
     #plt.show()
-    fig = Figure(figsize=(6.5, 4))
+    fig = Figure(figsize=(5,5))
     ax = fig.subplots(1, 1,)
     ax.pie(count_per_type,
            explode=[0.1 if i == 0 else 0 for i in range(len(commodity_types))],
@@ -120,7 +122,7 @@ def generate_graphs(df):
            shadow=True,
            startangle=0)
 
-    ax.set_title('Total items bought per commodity type')
+    #ax.set_title('Total items bought per commodity type')
     ax.axis('off')
     buf1.flush()
     fig.patch.set_alpha(0)
