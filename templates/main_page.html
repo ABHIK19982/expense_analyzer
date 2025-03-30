@@ -18,6 +18,7 @@
    </div>
  {% endfor %}
 {% endwith %}
+
   <h1>Monthly Expenses</h1>
   <div class="menu-bar">
         <a href="#add">Add</a>
@@ -28,9 +29,25 @@
         <div class="section">
             <h2>Add an Expense</h2>
             <form class="form-container" action="/add_expense/submit" method="POST">
+                <label class="form-label">Date</label>
                 <input type="date" name="expense_date" required>
+                <label class="form-label">Product Name</label>
                 <input type="text" name="commodity" placeholder="Object Name" required>
-                <input type="text" name="type" placeholder="Commodity Type" required>
+                <label class="form-label">Product Type</label>
+                <select name="type" required>
+                    <option value="">Select Product Type</option>
+                    <option value="Food">Food</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Grocery">Grocery</option>
+                    <option value="Green-Grocery">Green-Grocery</option>
+                    <option value="Clothes">Clothes</option>
+                    <option value="Bills">Bills</option>
+                    <option value="House-rent">House-rent</option>
+                    <option value="Other-rents">Other-rents</option>
+                    <option value="Miscellaneous">Miscellaneous</option>
+                </select>
+                <label class="form-label">Expense</label>
                 <input type="number" name="price" placeholder="Price" required>
                 <button type="submit">Submit</button>
             </form>
@@ -49,7 +66,9 @@
             <div class="date-range">
                 <label><strong>Date Range</strong></label>
                 <form action="/view_expense/date_range" method="post">
+                    <label>From:</label>
                     <input type="date" name="start_date" required>
+                    <label>To:</label>
                     <input type="date" name="end_date" required>
                     <button type="submit">Search</button>
                 </form>

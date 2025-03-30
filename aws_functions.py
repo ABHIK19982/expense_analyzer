@@ -1,3 +1,5 @@
+import textwrap
+
 import boto3
 from datetime import date
 from calendar import month_name
@@ -12,18 +14,20 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
-months = {'january':1,
-          'february':2,
-          'march':3,
-          'april':4,
-          'may':5,
-          'june':6,
-          'july':7,
-          'august':8,
-          'september':9,
-          'october':10,
-          'november':11,
-          'december':12}
+months = {'january': 1,
+          'february': 2,
+          'march': 3,
+          'april': 4,
+          'may': 5,
+          'june': 6,
+          'july': 7,
+          'august': 8,
+          'september': 9,
+          'october': 10,
+          'november': 11,
+          'december': 12}
+
+
 def query_dynamodb(data):
     db = boto3.client('dynamodb',
                       region_name=configs.keys.DB_REGION,
@@ -39,27 +43,27 @@ def query_dynamodb(data):
         current_year = date.today().year
         data = '{}{:02d}'.format(current_year, month)
         response = db.scan(ExpressionAttributeValues={
-                                ':ym': {
-                                    'S': data
-                                }
-                            },
-                            FilterExpression='year_month = :ym',
-                            ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
-                            TableName=configs.keys.TABLE_NAME
-                            )
+            ':ym': {
+                'S': data
+            }
+        },
+            FilterExpression='year_month = :ym',
+            ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
+            TableName=configs.keys.TABLE_NAME
+        )
     else:
         response = db.scan(ExpressionAttributeValues={
-                                ':sd': {
-                                    'S': data['start_date']
-                                },
-                                ':ed': {
-                                    'S': data['end_date']
-                                }
-                            },
-                            FilterExpression='Purchase_date BETWEEN :sd and :ed',
-                            ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
-                            TableName=configs.keys.TABLE_NAME
-                            )
+            ':sd': {
+                'S': data['start_date']
+            },
+            ':ed': {
+                'S': data['end_date']
+            }
+        },
+            FilterExpression='Purchase_date BETWEEN :sd and :ed',
+            ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
+            TableName=configs.keys.TABLE_NAME
+        )
     if response['Count'] == 0:
         print('No records found for the given date range')
         return -1
@@ -73,64 +77,90 @@ def query_dynamodb(data):
             else:
                 row.append(i[j]['N'])
         data.append(row)
-    df = pd.DataFrame(data, columns = cols)
+    df = pd.DataFrame(data, columns=cols)
     df['Price'] = df['Price'].astype(np.float64)
     df['Purchase_date_datetime'] = pd.to_datetime(df['Purchase_date'])
     df = df.sort_values(by='Purchase_date_datetime', ascending=False)
-    df = df.drop(['Purchase_date_datetime','Pid'], axis=1)
+    df = df.drop(['Purchase_date_datetime', 'Pid'], axis=1)
+    new_df = pd.DataFrame([['', np.sum(df['Price'].to_list()), '', 'Total Amount'],
+                           ['', df.shape[0], '', 'Total Quantity']],
+                          columns=['CommodityName', 'Price', 'Purchase_date', 'CommodityType'])
+    df = pd.concat([df, new_df], ignore_index=True)
+
+    df = df[['Purchase_date', 'CommodityName', 'CommodityType', 'Price']]
     db.close()
     return df
 
+
 def generate_graphs(df):
-    grp_df = df.groupby(['CommodityType']).agg({'Price': ['sum', 'count']})
-    grp_df.columns = ['Total', 'Count']
-    commodity_types = list(grp_df.index)
-    total_expense = grp_df['Total'].to_list()
-    total = sum(total_expense)
-    total_expense = [round(i / total * 100, 2) for i in total_expense]
-    count_per_type = grp_df['Count'].to_list()
-    total_count = sum(count_per_type)
-    count_per_type = [round(i / total_count * 100, 2) for i in count_per_type]
+    df = df.iloc[:-2]
+    df['CommodityTypeMod'] = df['CommodityType'].apply(lambda x: x if x in configs.keys.GRAPH1_COMM_TYPES else 'Rents' if x in ('House-rent','Other-rents') else 'Others')
+    grp_df1 = df.groupby(['CommodityTypeMod']).agg({'Price': ['sum']})
+    grp1_labels = list(grp_df1.index)
+    grp_df1.columns = ['Total']
+    grp1_expenses = grp_df1['Total'].to_list()
+    #total = sum(total_expense)
+    #total_expense = [round(i / total * 100, 2) for i in total_expense]
+    grp_df2 = df.query("CommodityType in @configs.keys.GRAPH2_COMM_TYPES").groupby(['CommodityType']).agg(
+        {'Price': ['sum']})
+    grp2_labels = list(grp_df2.index)
+    grp_df2.columns = ['Total']
+    grp2_expenses = grp_df2['Total'].to_list()
+    #total_count = sum(count_per_type)
+    #count_per_type = [round(i / total_count * 100, 2) for i in count_per_type]
 
-    labels = commodity_types
-    fig = Figure(figsize=(6.5,4))
-    ax = fig.subplots(1,1,)
-    ax.pie(total_expense,
-            explode = [0.1 if i == 0 else 0 for i in range(len(commodity_types))],
-            labels=labels,
-            autopct='%1.1f%%',
-            shadow=True,
-            startangle=0)
+    grp1_labels = [textwrap.fill(text, width=20) for text in grp1_labels]
+    grp1 = create_graph(y = grp1_expenses,layers = grp1_labels, graph_type = 'pie')
 
-    ax.set_title('Total Expense per Commodity Type')
-    ax.axis('off')
+    grp2_labels = [textwrap.fill(text, width=20) for text in grp2_labels]
+    grp2 = create_graph(y=grp2_expenses, layers=grp2_labels, graph_type='pie')
+
+    grp3_df = df.groupby(['Purchase_date']).agg({'Price': ['sum','count']})
+    grp3_df.columns = ['Total','Count']
+    grp3_dates_labels = list(grp3_df.index)
+    grp3_dates = list(range(0,grp3_df.shape[0]))
+    grp3_expenses = tuple(zip(*list(grp3_df.values)))
+    grp3 = create_graph(x = grp3_dates, y = grp3_expenses, layers = grp3_dates_labels, graph_type = 'bar')
+
+    return grp1, grp2, grp3
+
+
+def create_graph(x=None,y=None,layers=None, graph_type='pie'):
+    if y is None:
+        y = []
+    if x is None:
+        x = []
+    fig = Figure(figsize=(5, 5))
+    ax = fig.subplots(1, 1, )
+    if graph_type == 'pie':
+        ax.pie(y,
+               explode=[0.1 if i == 0 else 0 for i in range(len(layers))],
+               labels=layers,
+               autopct='%1.1f%%',
+               shadow=True,
+               startangle=90)
+        ax.axis('off')
+    elif graph_type == 'bar':
+        y_normal = ((np.array(y).T - np.min(y, axis = 1).T) / (np.max(y,axis = 1) - np.min(y,axis = 1)).T).T.tolist()
+        ax.bar(x, y_normal[0], width = -0.25, align = 'edge', color = 'blue',label='Total Expense')
+        ax.bar(x, y_normal[1], width = 0.25, align = 'edge', color= 'red', label='Total Quantity')
+        # Add value labels on top of each bar
+        for i in range(len(x)):
+            ax.text(x[i]-0.25/2, y_normal[0][i], f'{y[0][i]:.0f}', ha='right', va='bottom', fontsize=6)
+            ax.text(x[i]+0.25/2, y_normal[1][i], f'{y[1][i]:.0f}', ha='left', va='bottom', fontsize=6)
+
+        ax.set_xticks(x, layers, fontsize = 6, horizontalalignment = 'center')
+        ax.tick_params(axis = 'y', labelleft = False, direction = 'out')
+        ax.legend()
+        ax.set_xlabel('Expense Dates', loc = 'center',fontsize = 6)
+        ax.set_ylabel('Total expense/ Total products',loc = 'center', fontsize = 6,rotation = 90)
+
     buf1 = BytesIO()
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
     fig.savefig(buf1, format="png")
-    total_expense_data = base64.b64encode(buf1.getbuffer()).decode("ascii")
-    #print(total_expense_data)
-    #plt.show()
-    fig = Figure(figsize=(6.5, 4))
-    ax = fig.subplots(1, 1,)
-    ax.pie(count_per_type,
-           explode=[0.1 if i == 0 else 0 for i in range(len(commodity_types))],
-           labels=labels,
-           autopct='%1.1f%%',
-           shadow=True,
-           startangle=0)
-
-    ax.set_title('Total items bought per commodity type')
-    ax.axis('off')
-    buf1.flush()
-    fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)
-    fig.savefig(buf1, format="png")
-    #plt.show()
-    count_data = base64.b64encode(buf1.getbuffer()).decode("ascii")
-    data = (total_expense_data , count_data)
+    data = base64.b64encode(buf1.getbuffer()).decode("ascii")
     return data
-
 
 
 def push_to_dynamodb(data):

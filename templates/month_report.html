@@ -1,46 +1,61 @@
-{% extends "bootstrap/base.html" %}
-{% block html_attribs %} lang="en" {% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monthly Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='month_report.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">Monthly Expense Report - {{ date_month_range }}</h1>
+        
+        <div class="table-container">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        {% for col in columns %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+{% for row in data %}
+    {% if loop.index == (data|length - 1) %}
+        <tr>
+        {% for dt in row %}
+            <td style="border-top: 2px solid black">{{ dt }}</td>
+        {% endfor %}
+        </tr>
+    {% else %}
+        <tr>
+        {% for dt in row %}
+            <td>{{ dt }}</td>
+        {% endfor %}
+        </tr>
+    {% endif %}
+{% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-{% block head %}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='month_report.css')}}">
-{% endblock %}
-{% endblock %}
-
-{% block body %}
-{% with messages=get_flashed_messages(with_categories=true) %}
- {% for category, message in messages %}
-  <div class='alert alert-{{category}} text-center alert-dismissible fade show m-auto'>
-    {{ message }}
-   </div>
- {% endfor %}
-{% endwith %}
-<div class="container">
-  <p>Expense report for - {{ date_month_range }}</p>
-  <table class="table table-stripped">
-    <tr>
-      {% for col in columns %}
-      <th>{{ col }}</th>
-      {% endfor %}
-    </tr>
-    {% for row in data %}
-    <tr>
-      {% for dt in row %}
-      <td>{{ dt }}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-</div>
-<div class="graph-container">
-  <div class="sub-graph-container">
-    <img src='data:image/png;base64, {{ expense_graph }}'/>
-  </div>
-  <div class="sub-graph-container">
-    <img src='data:image/png;base64, {{ count_graph }}'/>
-  </div>
-</div>
-{% endblock %}
+        <div class="graph-container">
+            <div class="graph-row">
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Expense Distribution</h2>
+                    <img src="data:image/png;base64,{{ expense_graph }}" alt="Expense Distribution">
+                </div>
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Small Expense Distribution </h2>
+                    <img src="data:image/png;base64,{{ count_graph }}" alt="Transaction Count">
+                </div>
+            </div>
+            <div class="graph-row full-width">
+                <div class="sub-graph-container">
+                    <h2 class="graph-title">Trend Analysis</h2>
+                    <img src="data:image/png;base64,{{ trend_graph }}" alt="Trend Analysis">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
