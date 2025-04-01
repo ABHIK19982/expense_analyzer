@@ -1,7 +1,7 @@
 import textwrap
 
 import boto3
-from datetime import date
+from datetime import date, timedelta
 from calendar import month_name
 import calendar
 
@@ -92,7 +92,7 @@ def query_dynamodb(data):
     return df
 
 
-def generate_graphs(df):
+def generate_graphs(df,dates_range):
     df = df.iloc[:-2]
     df['CommodityTypeMod'] = df['CommodityType'].apply(lambda x: x if x in configs.keys.GRAPH1_COMM_TYPES else 'Rents' if x in ('House-rent','Other-rents') else 'Others')
     grp_df1 = df.groupby(['CommodityTypeMod']).agg({'Price': ['sum']})
@@ -115,24 +115,50 @@ def generate_graphs(df):
     grp2_labels = [textwrap.fill(text, width=20) for text in grp2_labels]
     grp2 = create_graph(y=grp2_expenses, layers=grp2_labels, graph_type='pie')
 
+
+    grp3_df_dates = df['Purchase_date'].drop_duplicates().to_list()
+    grp3_df_dates_missing = get_missing_dates(grp3_df_dates, dates_range)
     grp3_df = df.groupby(['Purchase_date']).agg({'Price': ['sum','count']})
     grp3_df.columns = ['Total','Count']
-    grp3_dates_labels = list(grp3_df.index)
-    grp3_dates = list(range(0,grp3_df.shape[0]))
-    grp3_expenses = tuple(zip(*list(grp3_df.values)))
+    grp3_df = grp3_df.reset_index()
+    grp3_df_full = pd.concat((grp3_df, pd.DataFrame([{'Purchase_date': i, 'Total': 0, 'Count': 0} for i in grp3_df_dates_missing])))
+    grp3_df_full = grp3_df_full.sort_values(by='Purchase_date', ascending=False)
+    grp3_dates = list(range(0,grp3_df_full.shape[0]))
+    grp3_dates_labels = list(grp3_df_full['Purchase_date'])
+    grp3_expenses = tuple(zip(*list(grp3_df_full[['Total','Count']].values)))
+    print(grp3_expenses , grp3_dates_labels, sep= '\n')
     grp3 = create_graph(x = grp3_dates, y = grp3_expenses, layers = grp3_dates_labels, graph_type = 'bar')
 
     return grp1, grp2, grp3
 
+
+def get_missing_dates(dates, date_ranges):
+    if isinstance(date_ranges,str):
+        month = months[date_ranges.lower()]
+        year = date.today().year
+        month_days = calendar.monthrange(year, month)[1]
+        report_month_dates = ['{:02d}-{:02d}-{:02d}'.format(year, month, i) for i in range(1, month_days+ 1)]
+    else:
+        start_date = date(int(date_ranges['start_date'].split('-')[0]),
+                          int(date_ranges['start_date'].split('-')[1]),
+                          int(date_ranges['start_date'].split('-')[2]))
+        end_date = date(int(date_ranges['end_date'].split('-')[0]),
+                          int(date_ranges['end_date'].split('-')[1]),
+                          int(date_ranges['end_date'].split('-')[2]))
+        date_difference = int((end_date - start_date).days)
+        report_month_dates = [date.strftime(start_date + timedelta(days = i), '%Y-%m-%d') for i in range(0, date_difference+1)]
+
+    return list(set(report_month_dates) - set(dates))
 
 def create_graph(x=None,y=None,layers=None, graph_type='pie'):
     if y is None:
         y = []
     if x is None:
         x = []
-    fig = Figure(figsize=(5, 5))
-    ax = fig.subplots(1, 1, )
+
     if graph_type == 'pie':
+        fig = Figure(figsize=(5, 5))
+        ax = fig.subplots(1, 1, )
         ax.pie(y,
                explode=[0.1 if i == 0 else 0 for i in range(len(layers))],
                labels=layers,
@@ -141,6 +167,8 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
                startangle=90)
         ax.axis('off')
     elif graph_type == 'bar':
+        fig = Figure(figsize=(25, 5))
+        ax = fig.subplots(1, 1, )
         y_normal = ((np.array(y).T - np.min(y, axis = 1).T) / (np.max(y,axis = 1) - np.min(y,axis = 1)).T).T.tolist()
         ax.bar(x, y_normal[0], width = -0.25, align = 'edge', color = 'blue',label='Total Expense')
         ax.bar(x, y_normal[1], width = 0.25, align = 'edge', color= 'red', label='Total Quantity')
@@ -159,6 +187,7 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
     fig.savefig(buf1, format="png")
+    fig.savefig(f'graphs/graph{graph_type}.png', format="png")
     data = base64.b64encode(buf1.getbuffer()).decode("ascii")
     return data
 
@@ -216,6 +245,6 @@ def get_last_three_months():
 
 
 if __name__ == '__main__':
-    df = query_dynamodb('march')
+    df = query_dynamodb({'start_date': '2025-03-01','end_date': '2025-03-31'})
     print(df.head())
-    generate_graphs(df)
+    graphs = generate_graphs(df,{'start_date': '2025-03-01','end_date': '2025-03-31'})

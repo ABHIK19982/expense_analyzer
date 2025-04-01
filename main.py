@@ -24,7 +24,7 @@ def get_expense():
         return render_template("main_page.html",months = app.config['MONTH_LIST'])
     else:
         print(df.head())
-        graphs = generate_graphs(df)
+        graphs = generate_graphs(df,dt)
     return render_template("month_report.html",
                            date_month_range = ' to '.join(list(dt.values())),
                            columns=df.columns,
@@ -42,7 +42,7 @@ def get_report(month):
         return render_template("main_page.html",months = app.config['MONTH_LIST'])
     else:
         print(df.head())
-        graphs = generate_graphs(df)
+        graphs = generate_graphs(df,month)
     return render_template("month_report.html",
                            date_month_range=month,
                            columns=df.columns,
