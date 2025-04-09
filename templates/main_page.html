@@ -13,7 +13,7 @@
 {% block body %}
 {% with messages=get_flashed_messages(with_categories=true) %}
  {% for category, message in messages %}
-  <div class='alert alert-{{category}} text-center alert-dismissible fade show m-auto'>
+  <div class='alert alert-{{category}}'>
     {{ message }}
    </div>
  {% endfor %}
@@ -21,13 +21,18 @@
 
   <h1>Monthly Expenses</h1>
   <div class="menu-bar">
-        <a href="#add">Add</a>
-        <a href="#view">View</a>
+        <a href="url_for('/'),">Add</a>
+        <a href="url_for('/analytics',method = 'POST')">View</a>
     </div>
 
     <div class="container">
         <div class="section">
             <h2>Add an Expense</h2>
+            <form class = "form-container" action="/add_expense/submit_file" method="POST" enctype="multipart/form-data">
+                <input type="file" name="bill_image" id="bill_image" accept=".jpg,.pdf" placeholder="Add Bill image(jpg/pdf)" onchange="validateFile(this)">
+                <button type="submit" onclick="return validateFileSubmit()">Upload</button>
+            </form>
+            <label>Or</label>
             <form class="form-container" action="/add_expense/submit" method="POST">
                 <label class="form-label">Date</label>
                 <input type="date" name="expense_date" required>
@@ -75,4 +80,27 @@
             </div>
         </div>
     </div>
+<script>
+function validateFile(input) {
+    const file = input.files[0];
+    const validExtensions = ['jpg', 'pdf'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    if(!validExtensions.includes(fileExtension)) {
+        alert('Please upload only jpg or pdf files');
+        input.value = '';
+        return false;
+    }
+    return true;
+}
+
+function validateFileSubmit() {
+    const fileInput = document.getElementById('bill_image');
+    if(!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a file to upload');
+        return false;
+    }
+    return validateFile(fileInput);
+}
+</script>
 {% endblock %}
