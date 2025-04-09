@@ -119,6 +119,5 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
     fig.savefig(buf1, format="png")
-    fig.savefig(f'graphs/graph{graph_type}.png', format="png")
     data = base64.b64encode(buf1.getbuffer()).decode("ascii")
     return data

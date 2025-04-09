@@ -9,7 +9,7 @@ Bootstrap(app)
 
 @app.route("/")
 def index():
-    app.config['SECRET_KEY'] = configs.keys.SECRET_KEY_GEN()
+    app.config['SECRET_KEY'] = SECRET_KEY_GEN()
     month_list = get_last_three_months()
     app.config['MONTH_LIST'] = month_list
     return render_template("main_page.html", months=month_list)
@@ -34,7 +34,10 @@ def get_expense():
     dt = request.form.to_dict()
     df = query_dynamodb(dt)
     if isinstance(df, int) and df == -1:
-        flash("No records found", "warning")
+        try:
+            flash("No records found", "warning")
+        except Exception as e:
+            print(e)
         return render_template("main_page.html", months=app.config['MONTH_LIST'])
     else:
         print(df.head())
@@ -52,7 +55,10 @@ def get_expense():
 def get_report(month):
     df = query_dynamodb(month)
     if isinstance(df, int) and df == -1:
-        flash("No records found", "warning")
+        try:
+            flash("No records found", "warning")
+        except Exception as e:
+            print(e)
         return render_template("main_page.html", months=app.config['MONTH_LIST'])
     else:
         print(df.head())
@@ -69,7 +75,10 @@ def get_report(month):
 def add_expense_to_file():
     dt = request.form.to_dict()
     push_to_dynamodb(dt)
-    flash("Expense Entered", "success")
+    try:
+        flash("No records found", "warning")
+    except Exception as e:
+        print(e)
     return render_template("main_page.html", months=app.config['MONTH_LIST'])
 
 
