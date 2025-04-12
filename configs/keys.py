@@ -1,9 +1,16 @@
 import os
 import sys
 
+MYSQL_HOST = "localhost" #"expenseanalyzer.mysql.pythonanywhere-services.com"
+MYSQL_USER = 'expenseanalyzer'
+MYSQL_PASSWORD = ''
+MYSQL_DB = 'expenseanalyzer$metastore'
+PASS_EXPIRY = 30
+MAX_PASS_HISTORY = 3
+
 SECRET_KEY_GEN = lambda: os.urandom(24).hex()
-AWS_SECRET_KEY = '<aws_secret_key>'
-AWS_ACCESS_KEY = '<aws_access_key>'
+AWS_SECRET_KEY = ''
+AWS_ACCESS_KEY = ''
 DB_REGION = 'ap-south-1'
 TABLE_NAME = 'expense_table'
 

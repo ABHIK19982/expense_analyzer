@@ -21,13 +21,13 @@ months = {'january': 1,
           'november': 11,
           'december': 12}
 
-def query_dynamodb(data):
-    db = boto3.client('dynamodb',
+def query_dynamodb(data,user):
+    aws_db = boto3.client('dynamodb',
                       region_name=configs.keys.DB_REGION,
                       aws_access_key_id=configs.keys.AWS_ACCESS_KEY,
                       aws_secret_access_key=configs.keys.AWS_SECRET_KEY
                       )
-    if configs.keys.TABLE_NAME not in db.list_tables()['TableNames']:
+    if configs.keys.TABLE_NAME not in aws_db.list_tables()['TableNames']:
         print('DB resource not available. Exiting process')
         return -1
     response = []
@@ -35,25 +35,31 @@ def query_dynamodb(data):
         month = months[data.lower()]
         current_year = date.today().year
         data = '{}{:02d}'.format(current_year, month)
-        response = db.scan(ExpressionAttributeValues={
+        response = aws_db.scan(ExpressionAttributeValues={
             ':ym': {
                 'S': data
+            },
+            ':usr':{
+                'S': user
             }
         },
-            FilterExpression='year_month = :ym',
+            FilterExpression='year_month = :ym and byr_name = :usr',
             ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
             TableName=configs.keys.TABLE_NAME
         )
     else:
-        response = db.scan(ExpressionAttributeValues={
+        response = aws_db.scan(ExpressionAttributeValues={
             ':sd': {
                 'S': data['start_date']
             },
             ':ed': {
                 'S': data['end_date']
+            },
+            ':usr': {
+                'S': user
             }
         },
-            FilterExpression='Purchase_date BETWEEN :sd and :ed',
+            FilterExpression='Purchase_date BETWEEN :sd and :ed and byr_name = :usr',
             ProjectionExpression='Pid, CommodityName, Price, Purchase_date, CommodityType',
             TableName=configs.keys.TABLE_NAME
         )
@@ -81,22 +87,22 @@ def query_dynamodb(data):
     df = pd.concat([df, new_df], ignore_index=True)
 
     df = df[['Purchase_date', 'CommodityName', 'CommodityType', 'Price']]
-    db.close()
+    aws_db.close()
     return df
 
 
 
 
-def push_to_dynamodb(data):
-    db = boto3.client('dynamodb',
+def push_to_dynamodb(data,user):
+    aws_db = boto3.client('dynamodb',
                       region_name=configs.keys.DB_REGION,
                       aws_access_key_id=configs.keys.AWS_ACCESS_KEY,
                       aws_secret_access_key=configs.keys.AWS_SECRET_KEY
                       )
-    if configs.keys.TABLE_NAME not in db.list_tables()['TableNames']:
+    if configs.keys.TABLE_NAME not in aws_db.list_tables()['TableNames']:
         print('DB resource not available. Exiting process')
         return -1
-    pids = db.scan(ExpressionAttributeNames={'#P': 'Pid'},
+    pids = aws_db.scan(ExpressionAttributeNames={'#P': 'Pid'},
                    ExpressionAttributeValues={
                        ':ym': {
                            'S': data['expense_date'].replace('-', '')[0:6]
@@ -113,9 +119,10 @@ def push_to_dynamodb(data):
         last_pid = max(pid_list)
         current_pid = last_pid + 1
 
-    response = db.put_item(TableName=configs.keys.TABLE_NAME,
+    response = aws_db.put_item(TableName=configs.keys.TABLE_NAME,
                            Item={'Pid': {'S': str(current_pid).rjust(4)},
                                  'year_month': {'S': data['expense_date'].replace('-', '')[0:6]},
+                                 'byr_name': {'S': user},
                                  'CommodityName': {'S': data['commodity']},
                                  'Price': {'N': data['price']},
                                  'Purchase_date': {'S': data['expense_date']},
@@ -124,8 +131,36 @@ def push_to_dynamodb(data):
                            ReturnItemCollectionMetrics='SIZE'
                            )
     print(response)
-    db.close()
+    aws_db.close()
 
+    return 0
+
+def add_attribute():
+    aws_db = boto3.client('dynamodb',
+                          region_name=configs.keys.DB_REGION,
+                          aws_access_key_id=configs.keys.AWS_ACCESS_KEY,
+                          aws_secret_access_key=configs.keys.AWS_SECRET_KEY
+                          )
+    pids = aws_db.scan(ExpressionAttributeNames={'#P': 'Pid','#ym':'year_month'},
+                    ProjectionExpression='#P,#ym',
+                    TableName=configs.keys.TABLE_NAME
+                    )
+    for i in pids['Items']:
+        pid = i['Pid']['S']
+        try:
+            aws_db.update_item(TableName=configs.keys.TABLE_NAME,
+                               ExpressionAttributeNames={'#N': 'byr_name'},
+                               Key={'Pid': {'S': i['Pid']['S']}, 'year_month': {'S': i['year_month']['S']}},
+                               ExpressionAttributeValues={
+                                   ':val': {'S': 'Pramanikexpense'}
+                               },
+                               UpdateExpression='SET #N = :val'
+                               )
+        except Exception as e:
+            print(e)
+        finally:
+            print(f'Done: {pid}')
+    aws_db.close()
 
 def get_last_three_months():
     current_month_idx = date.today().month - 1
@@ -140,6 +175,6 @@ def get_last_three_months():
 
 
 if __name__ == '__main__':
-    df = query_dynamodb({'start_date': '2025-03-01','end_date': '2025-03-31'})
-    print(df.head())
-    graphs = generate_graphs(df,{'start_date': '2025-03-01','end_date': '2025-03-31'})
+    data = {'expense_date':'9999-12-31','commodity':'test2','price':'999','type':'test'}
+    user = 'test_User'
+    push_to_dynamodb(data, user)

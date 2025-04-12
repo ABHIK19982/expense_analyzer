@@ -1,5 +1,5 @@
 body {
-    font-family: verdana, sans-serif;
+    font-family: gill sans, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
@@ -11,8 +11,14 @@ body {
     background-color: #333;
     overflow: hidden;
     display: flex;
-    padding: 10px;
+    padding: auto;
     width: 100%;
+    height: 30px;
+    max-width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background-image: linear-gradient(180deg, #404040, #333);
 }
 .menu-bar a {
     color: white;
@@ -20,6 +26,15 @@ body {
     padding: 10px 20px;
     display: block;
 }
+
+.menu-bar p {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+    width: auto;
+}
+
 .menu-bar a:hover {
     background-color: #575757;
 }
@@ -28,6 +43,8 @@ body {
     justify-content: space-around;
     width: 80%;
     margin-top: 20px;
+
+    max-width: 100%;
 }
 .section {
     background: white;
@@ -35,6 +52,8 @@ body {
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     width: 45%;
+
+    max-width: 100%;
 }
 .form-container {
     display: flex;
@@ -47,6 +66,8 @@ body {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .form-container select {
     display: block;
@@ -55,6 +76,8 @@ body {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .form-container button {
     width: 100%;
@@ -64,6 +87,8 @@ body {
     border: none;
     cursor: pointer;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .form-container button:hover {
     background-color: #76c76c;
@@ -85,6 +110,8 @@ body {
     border: none;
     cursor: pointer;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .btn:hover {
     background-color: #0056b3;
@@ -100,6 +127,8 @@ body {
     margin: 5px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .date-range button {
     width: 100%;
@@ -109,7 +138,171 @@ body {
     border: none;
     cursor: pointer;
     border-radius: 4px;
+
+    max-width: 100%;
 }
 .date-range button:hover {
     background-color: #76c76c;
+}
+
+
+/* Base responsive settings */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Responsive container */
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+
+    max-width: 100%;
+}
+
+/* Responsive images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive typography */
+html {
+    font-size: 16px;
+}
+
+.parallax-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('images/pexels-rdne-7947758.jpg');
+    background-color: rgba(0, 0, 0, 0.3);
+    background-blend-mode: overlay;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: -1;
+ }
+
+.mini-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height:100%;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 100%;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.mini-container p{
+    font-family: Bradley Hand, Cursive;
+    color: white;
+}
+
+.mini-container h1{
+    font-family: Bradley Hand, Cursive;
+    color: white;
+}
+
+.mini-container h2{
+    font-family: Bradley Hand, Cursive;
+    color: white;
+}
+/* Media Queries */
+/* Mobile devices */
+@media screen and (max-width: 480px) {
+    align-items: center
+
+}
+
+/* Media Queries */
+/* Mobile devices */
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 14px;
+    }
+
+    .container {
+        width: 100%;
+        padding: 10px;
+    
+    max-width: 100%;
+}
+}
+
+/* Tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    .container {
+        width: 95%;
+        max-width: 720px;
+    }
+}
+
+/* Small laptops */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+/* Desktops */
+@media screen and (min-width: 1025px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* Flexbox grid system */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col {
+    flex: 1;
+    padding: 0 15px;
+}
+
+/* Responsive utilities */
+.hide-on-mobile {
+    display: none;
+}
+
+@media screen and (min-width: 768px) {
+    .hide-on-mobile {
+        display: block;
+    }
+}
+
+/* Smooth transitions */
+* {
+    transition: all 0.3s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body {
+        animation: none;
+    }
+
+    .parallax-bg {
+        transform: none !important;
+    }
+}
+@keyframes fadeOut {
+  0% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; visibility: hidden; }
 }
