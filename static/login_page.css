@@ -4,8 +4,9 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
+    color: white;
     align-items: center;
-    background-color: #f4f4f4;
+    background-color: black;
 }
 .menu-bar {
     background-color: #333;
@@ -38,7 +39,6 @@ body {
     justify-content: space-around;
     width: 80%;
     margin-top: 20px;
-
     max-width: 100%;
 }
 
@@ -47,35 +47,45 @@ body {
     justify-content: space-around;
     width: 40%;
     margin-top: 20px;
-
     max-width: 100%;
 }
 
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
 .login-form input {
     display: block;
     width: 100%;
     margin-bottom: 10px;
+    background-color: #9174ad;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 2px solid #424240;
     border-radius: 4px;
-
     max-width: 100%;
 }
-
+.login-form select {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    background-color: #9174ad;
+    padding: 8px;
+    border: 2px solid #424240;
+    border-radius: 4px;
+    max-width: 100%;
+}
 .login-form button {
     width: 100%;
     padding: 10px;
-    background-color: #90EE90;
+    background-color: #340463;
     color: white;
     border: none;
     cursor: pointer;
     border-radius: 4px;
-
     max-width: 100%;
 }
-
 .login-form button:hover {
-    background-color: #76c76c;
+    background-color: #1b0136;
 }
 
 @keyframes fadeOut {
