@@ -1,0 +1,181 @@
+body {
+    font-family: gill sans, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+.menu-bar {
+    background-color: #333;
+    overflow: hidden;
+    display: flex;
+    padding: 10px;
+    width: 100%;
+
+    max-width: 100%;
+}
+.menu-bar a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+}
+
+.menu-bar p {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+}
+
+.menu-bar a:hover {
+    background-color: #575757;
+}
+.container {
+    display: flex;
+    justify-content: space-around;
+    width: 80%;
+    margin-top: 20px;
+
+    max-width: 100%;
+}
+
+.sub-container {
+    display: flex;
+    justify-content: space-around;
+    width: 40%;
+    margin-top: 20px;
+
+    max-width: 100%;
+}
+
+.login-form input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    max-width: 100%;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #90EE90;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+
+    max-width: 100%;
+}
+
+.login-form button:hover {
+    background-color: #76c76c;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+
+/* Base responsive settings */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Responsive container */
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+
+    max-width: 100%;
+}
+
+/* Responsive images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive typography */
+html {
+    font-size: 16px;
+}
+
+/* Media Queries */
+/* Mobile devices */
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 14px;
+    }
+
+    .container {
+        width: 100%;
+        padding: 10px;
+    
+    max-width: 100%;
+}
+}
+
+/* Tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    .container {
+        width: 95%;
+        max-width: 720px;
+    }
+}
+
+/* Small laptops */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+/* Desktops */
+@media screen and (min-width: 1025px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* Flexbox grid system */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col {
+    flex: 1;
+    padding: 0 15px;
+}
+
+/* Responsive utilities */
+.hide-on-mobile {
+    display: none;
+}
+
+@media screen and (min-width: 768px) {
+    .hide-on-mobile {
+        display: block;
+    }
+}
+
+/* Smooth transitions */
+* {
+    transition: all 0.3s ease-in-out;
+}

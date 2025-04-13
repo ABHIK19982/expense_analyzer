@@ -13,18 +13,24 @@
 {% block body %}
 {% with messages=get_flashed_messages(with_categories=true) %}
  {% for category, message in messages %}
-  <div class='alert alert-{{category}}'>
+  <div class='alert alert-{{category}}' style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; opacity: 0.5; animation: fadeOut 5s forwards;">
     {{ message }}
    </div>
  {% endfor %}
 {% endwith %}
 
-  <h1>Monthly Expenses</h1>
+<style>
+
+</style>
+
+{% if user %}
   <div class="menu-bar">
         <a href="url_for('/'),">Add</a>
         <a href="url_for('/analytics',method = 'POST')">View</a>
+        <p>Welcome {{ username }}</p>
+        <a href="{{url_for('logout')}}">Logout</a>
     </div>
-
+    <h1>Monthly Expenses</h1>
     <div class="container">
         <div class="section">
             <h2>Add an Expense</h2>
@@ -103,4 +109,18 @@ function validateFileSubmit() {
     return validateFile(fileInput);
 }
 </script>
+{% else %}
+<div class="parallax-bg">
+    <div class="menu-bar">
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('signup') }}">Signup</a>
+    </div>
+    <div class="mini-container">
+        <p><h1>Welcome to Expense Analyzer</h1></p>
+        <p><h2>One stop Solution to aggregate, manage and analyze monthly expenses</h2></p>
+        <p><a href="{{ url_for('login') }}">Login</a> to get started</p>
+    </div>
+</div>
+
+{% endif %}
 {% endblock %}
