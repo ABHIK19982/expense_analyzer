@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from io import BytesIO
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import configs.keys
 import textwrap
 from matplotlib.figure import Figure
 
@@ -26,20 +26,20 @@ months = {'january': 1,
 
 def generate_graphs(df,dates_range):
     df = df.iloc[:-2]
+# Filtering out Salary and Credits transactions from the dataframe
+# Using a list for better readability and maintainability
+    df = df.query('CommodityType not in ["Salary", "Credits"]')
     df['CommodityTypeMod'] = df['CommodityType'].apply(lambda x: x if x in configs.keys.GRAPH1_COMM_TYPES else 'Rents' if x in ('House-rent','Other-rents') else 'Others')
-    grp_df1 = df.groupby(['CommodityTypeMod']).agg({'Price': ['sum']})
+
+    grp_df1 = df.groupby(['CommodityTypeMod']).agg({'Debits': ['sum']})
     grp1_labels = list(grp_df1.index)
     grp_df1.columns = ['Total']
     grp1_expenses = grp_df1['Total'].to_list()
-    #total = sum(total_expense)
-    #total_expense = [round(i / total * 100, 2) for i in total_expense]
     grp_df2 = df.query("CommodityType in @configs.keys.GRAPH2_COMM_TYPES").groupby(['CommodityType']).agg(
-        {'Price': ['sum']})
+        {'Debits': ['sum']})
     grp2_labels = list(grp_df2.index)
     grp_df2.columns = ['Total']
     grp2_expenses = grp_df2['Total'].to_list()
-    #total_count = sum(count_per_type)
-    #count_per_type = [round(i / total_count * 100, 2) for i in count_per_type]
 
     grp1_labels = [textwrap.fill(text, width=20) for text in grp1_labels]
     grp1 = create_graph(y = grp1_expenses,layers = grp1_labels, graph_type = 'pie')
@@ -50,7 +50,7 @@ def generate_graphs(df,dates_range):
 
     grp3_df_dates = df['Purchase_date'].drop_duplicates().to_list()
     grp3_df_dates_missing = get_missing_dates(grp3_df_dates, dates_range)
-    grp3_df = df.groupby(['Purchase_date']).agg({'Price': ['sum','count']})
+    grp3_df = df.groupby(['Purchase_date']).agg({'Debits': ['sum','count']})
     grp3_df.columns = ['Total','Count']
     grp3_df = grp3_df.reset_index()
     grp3_df_full = pd.concat((grp3_df, pd.DataFrame([{'Purchase_date': i, 'Total': 0, 'Count': 0} for i in grp3_df_dates_missing])))
@@ -58,7 +58,6 @@ def generate_graphs(df,dates_range):
     grp3_dates = list(range(0,grp3_df_full.shape[0]))
     grp3_dates_labels = list(grp3_df_full['Purchase_date'])
     grp3_expenses = tuple(zip(*list(grp3_df_full[['Total','Count']].values)))
-    print(grp3_expenses , grp3_dates_labels, sep= '\n')
     grp3 = create_graph(x = grp3_dates, y = grp3_expenses, layers = grp3_dates_labels, graph_type = 'bar')
 
     return grp1, grp2, grp3
@@ -99,7 +98,7 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
                startangle=90)
         ax.axis('off')
     elif graph_type == 'bar':
-        fig = Figure(figsize=(25, 5))
+        fig = Figure(figsize=(35, 5))
         ax = fig.subplots(1, 1, )
         y_normal = ((np.array(y).T - np.min(y, axis = 1).T) / (np.max(y,axis = 1) - np.min(y,axis = 1)).T).T.tolist()
         ax.bar(x, y_normal[0], width = -0.25, align = 'edge', color = 'blue',label='Total Expense')
@@ -109,11 +108,11 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
             ax.text(x[i]-0.25/2, y_normal[0][i], f'{y[0][i]:.0f}', ha='right', va='bottom', fontsize=6)
             ax.text(x[i]+0.25/2, y_normal[1][i], f'{y[1][i]:.0f}', ha='left', va='bottom', fontsize=6)
 
-        ax.set_xticks(x, layers, fontsize = 6, horizontalalignment = 'center')
+        ax.set_xticks(x, layers, fontsize = 7, horizontalalignment = 'center')
         ax.tick_params(axis = 'y', labelleft = False, direction = 'out')
         ax.legend()
-        ax.set_xlabel('Expense Dates', loc = 'center',fontsize = 6)
-        ax.set_ylabel('Total expense/ Total products',loc = 'center', fontsize = 6,rotation = 90)
+        ax.set_xlabel('Expense Dates', loc = 'center',fontsize = 7)
+        ax.set_ylabel('Total expense/ Total products',loc = 'center', fontsize = 7,rotation = 90)
 
     buf1 = BytesIO()
     fig.patch.set_alpha(0)
@@ -121,3 +120,8 @@ def create_graph(x=None,y=None,layers=None, graph_type='pie'):
     fig.savefig(buf1, format="png")
     data = base64.b64encode(buf1.getbuffer()).decode("ascii")
     return data
+
+
+if __name__ == '__main__':
+    df = get_missing_dates(['2025-03-02','2025-03-05','2025-03-23'],'March')
+    print(df)
