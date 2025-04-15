@@ -147,7 +147,8 @@ def get_report(month):
                            columns=df.columns,
                            data=list(df.values),
                            expense_graph=graphs[0],
-                           count_graph=graphs[1])
+                           count_graph=graphs[1],
+                           trend_graph=graphs[2])
 
 
 @app.route("/add_expense/submit", methods=['POST'])

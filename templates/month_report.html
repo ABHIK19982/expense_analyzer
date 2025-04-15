@@ -21,16 +21,24 @@
                 </thead>
                 <tbody>
 {% for row in data %}
-    {% if loop.index == (data|length - 1) %}
+    {% if loop.index == (data|length) %}
         <tr>
         {% for dt in row %}
-            <td style="border-top: 2px solid black">{{ dt }}</td>
+            <td style="border-top: 2px solid white">{{ dt }}</td>
         {% endfor %}
         </tr>
     {% else %}
         <tr>
         {% for dt in row %}
-            <td>{{ dt }}</td>
+            {% if loop.index == 4 %}
+                <td style="color: #961006; border-left: 1px solid white">{{ dt }}</td>
+            {% elif loop.index == 5 %}
+                <td style="color: #529906; border-left: 1px solid white">{{ dt }}</td>
+            {% elif loop.index == 6 %}
+                <td style="border-left: 1px solid white">{{ dt }}</td>
+            {% else %}
+                <td>{{ dt }}</td>
+            {% endif %}
         {% endfor %}
         </tr>
     {% endif %}

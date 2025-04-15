@@ -31,7 +31,7 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     overflow: auto;
     position: relative;
-    max-height: 500px;
+    max-height: 1000px;
 }
 
 .report-table {
@@ -50,7 +50,7 @@ body {
 
 .report-table td {
     padding: 12px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #424240;
 }
 
 .report-table tbody tr:hover {
@@ -96,7 +96,7 @@ body {
     padding: 15px;
     border: 2px solid #424240;
     border-radius: 6px;
-    background-color: #27222b;
+    background-color: #876aa3;
 }
 
 .graph-title {

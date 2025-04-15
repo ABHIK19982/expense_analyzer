@@ -77,16 +77,29 @@ def query_dynamodb(data,user):
                 row.append(i[j]['N'])
         data.append(row)
     df = pd.DataFrame(data, columns=cols)
+    #print(df.head())
     df['Price'] = df['Price'].astype(np.float64)
     df['Purchase_date_datetime'] = pd.to_datetime(df['Purchase_date'])
-    df = df.sort_values(by='Purchase_date_datetime', ascending=False)
+    df = df.sort_values(by='Purchase_date_datetime', ascending=True)
     df = df.drop(['Purchase_date_datetime', 'Pid'], axis=1)
-    new_df = pd.DataFrame([['', np.sum(df['Price'].to_list()), '', 'Total Amount'],
-                           ['', df.shape[0], '', 'Total Quantity']],
-                          columns=['CommodityName', 'Price', 'Purchase_date', 'CommodityType'])
+    #print(df[['Price','CommodityType']].head())
+    df['Debits'] = [i[0] if i[1] not in ('Salary','Credits') else 0 for i in df[['Price','CommodityType']].values]
+    df['Credits'] = [i[0] if i[1] in ('Salary', 'Credits') else 0 for i in
+                    df[['Price', 'CommodityType']].values]
+    df['NetOutstanding'] = df['Credits'] - df['Debits']
+    df['NetOutstanding'] = df['NetOutstanding'].expanding(min_periods = 0).sum()
+    print(df.head())
+    new_df = pd.DataFrame([['',
+                            np.sum(df['Debits'].to_list()),
+                            np.sum(df['Credits'].to_list()),
+                            df['NetOutstanding'].loc[df.shape[0]-1],
+                            '',
+                            df.shape[0]]],
+                          columns=['CommodityName', 'Debits', 'Credits', 'NetOutstanding', 'Purchase_date', 'CommodityType'])
     df = pd.concat([df, new_df], ignore_index=True)
 
-    df = df[['Purchase_date', 'CommodityName', 'CommodityType', 'Price']]
+    df = df[['Purchase_date', 'CommodityName', 'CommodityType', 'Debits','Credits','NetOutstanding']]
+
     aws_db.close()
     return df
 
@@ -175,6 +188,5 @@ def get_last_three_months():
 
 
 if __name__ == '__main__':
-    data = {'expense_date':'9999-12-31','commodity':'test2','price':'999','type':'test'}
-    user = 'test_User'
-    push_to_dynamodb(data, user)
+    df = query_dynamodb({'start_date':'2025-03-25','end_date':'2025-03-25'},'Pramanikexpense')
+    print(list(df.values))

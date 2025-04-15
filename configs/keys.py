@@ -1,7 +1,7 @@
 import os
 import sys
 
-MYSQL_HOST = "localhost" #"expenseanalyzer.mysql.pythonanywhere-services.com"
+MYSQL_HOST = "expenseanalyzer.mysql.pythonanywhere-services.com"
 MYSQL_USER = 'expenseanalyzer'
 MYSQL_PASSWORD = ''
 MYSQL_DB = 'expenseanalyzer$metastore'
