@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Expense Analyzer</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <div class="container">
+    <div class="sub-container">
+      <form class="login-form" id="login-form">
+        <label>Username</label>
+        <input type="text" name="username" required>
+        <label>Password</label>
+        <input type="password" name="password" required>
+        <button class="login_page_button" type="submit">Login</button>
+      </form>
+      <div class="sub-container">
+        <p>
+          Not having an account?
+          <a href="/signup.html" class="text-label">Register here</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>
