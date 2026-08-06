@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Report - Expense Analyzer</title>
+  <link rel="stylesheet" href="/css/report.css">
+</head>
+<body>
+  <div class="container">
+    <p style="margin-bottom: 1rem;"><a href="/" style="color:#fff;">&larr; Back to dashboard</a></p>
+    <h1 class="main-title" id="report-title">Monthly Expense Report</h1>
+
+    <div class="table-container">
+      <table class="report-table" id="report-table">
+        <thead>
+          <tr></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="graph-container">
+      <div class="graph-row">
+        <div class="sub-graph-container">
+          <h2 class="graph-title">Expense Distribution</h2>
+          <img id="expense-graph" alt="Expense Distribution">
+        </div>
+        <div class="sub-graph-container">
+          <h2 class="graph-title">Small Expense Distribution</h2>
+          <img id="count-graph" alt="Transaction Count">
+        </div>
+      </div>
+      <div class="graph-row full-width">
+        <div class="sub-graph-container">
+          <h2 class="graph-title">Trend Analysis</h2>
+          <img id="trend-graph" alt="Trend Analysis">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/report.js"></script>
+</body>
+</html>
