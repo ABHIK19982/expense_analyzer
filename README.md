@@ -38,7 +38,8 @@ Expense tracking web application with a **FastAPI** JSON backend and a **vanilla
 ```
 expense_analyzer/
 ├── backend/
-│   ├── requirements.txt
+│   ├── pyproject.toml
+│   ├── uv.lock
 │   ├── .env.example
 │   └── app/
 │       ├── main.py              # FastAPI app, session, CORS, static mount
@@ -124,19 +125,20 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill i
 ### Prerequisites
 
 - Python 3.10+
+- [uv](https://docs.astral.sh/uv/) (install via `curl -LsSf https://astral.sh/uv/install.sh | sh`)
 - MySQL with `user_details` (created via `init_db` on startup when reachable)
 - DynamoDB table `expense_table` in the configured region
 
 ### Local development
 
+Backend dependencies are declared in `backend/pyproject.toml` and locked in `backend/uv.lock`. Install and run with **uv** (not pip):
+
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+uv sync
 cp .env.example .env        # then edit secrets
 
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Open `http://127.0.0.1:8000/` — the frontend is served from the same origin so session cookies work.
@@ -147,7 +149,8 @@ This app is ASGI (FastAPI/uvicorn), not Flask WSGI. Deploy with uvicorn/gunicorn
 
 ```bash
 cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uv sync
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ---
