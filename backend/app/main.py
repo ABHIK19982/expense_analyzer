@@ -1,4 +1,16 @@
-"""FastAPI application entry point."""
+"""
+Author: Abhik Pramanik
+Change Date: 2026-08-07
+Change details: Start uvicorn when main.py is executed so the FastAPI server
+                listens on 127.0.0.1:8000 with reload enabled for local development.
+FastAPI application entry point for Expense Analyzer.
+Creates the ASGI app (middleware, routers, optional frontend static mount) and
+exposes a ``__main__`` runner that starts uvicorn.
+Inputs: environment / ``.env`` settings via ``get_settings()``; optional
+        ``frontend/`` directory for static file serving.
+Outputs: module-level ``app`` (FastAPI instance); when run as a script, a
+         long-running uvicorn HTTP server on 127.0.0.1:8000.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +31,11 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """
+    Purpose: Run startup/shutdown hooks for the FastAPI app (initialize DB).
+    Inputs: ``_app`` — the FastAPI application instance (unused beyond protocol).
+    Outputs: async context manager that yields control for the app lifetime.
+    """
     try:
         init_db()
     except Exception as exc:  # noqa: BLE001
@@ -28,6 +45,12 @@ async def lifespan(_app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    """
+    Purpose: Build and configure the Expense Analyzer FastAPI application.
+    Inputs: None (reads settings via ``get_settings()``).
+    Outputs: Configured ``FastAPI`` instance with session/CORS middleware,
+             API routers, health endpoint, and optional frontend static mount.
+    """
     settings = get_settings()
     app = FastAPI(
         title="Expense Analyzer",
@@ -61,6 +84,11 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     def health():
+        """
+        Purpose: Liveness check for the API process.
+        Inputs: None.
+        Outputs: JSON ``{"status": "ok"}``.
+        """
         return {"status": "ok"}
 
     if FRONTEND_DIR.is_dir():
@@ -73,4 +101,19 @@ def create_app() -> FastAPI:
     return app
 
 
+def run() -> None:
+    """
+    Purpose: Start the uvicorn ASGI server for local development.
+    Inputs: None (host/port/reload are fixed for local use).
+    Outputs: None; blocks while serving HTTP on 127.0.0.1:8000 with reload.
+    """
+    import uvicorn
+
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+
+
 app = create_app()
+
+
+if __name__ == "__main__":
+    run()
