@@ -24,11 +24,14 @@ Expense tracking web application with a **FastAPI** JSON backend and a **vanilla
            │                  │
            ▼                  ▼
      SQLite user_details   AWS DynamoDB expense_table
+           │
+           └── periodic backup ──► MySQL user_details (optional)
 ```
 
 | Store | Purpose |
 |-------|---------|
-| **SQLite** | User metastore (`user_details`) — auth, profile (local file) |
+| **SQLite** | User metastore (`user_details`) — primary auth, profile (local file) |
+| **MySQL** | User metastore backup (`user_details`) — optional periodic full-table sync |
 | **AWS DynamoDB** | Expense transactions (`expense_table`) |
 
 ---
@@ -112,6 +115,9 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill i
 | Variable | Purpose |
 |----------|---------|
 | `SQLITE_DB_PATH` | Local SQLite metastore file (default `data/metastore.db`) |
+| `MYSQL_HOST` / `MYSQL_USER` / `MYSQL_PASSWORD` / `MYSQL_DB` | MySQL backup target |
+| `MYSQL_BACKUP_ENABLED` | Enable background SQLite → MySQL sync (`false` by default) |
+| `MYSQL_BACKUP_INTERVAL_SECONDS` | Seconds between full backup syncs (default `3600`) |
 | `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` | DynamoDB credentials |
 | `DB_REGION` | AWS region (default `ap-south-1`) |
 | `TABLE_NAME` | DynamoDB table (default `expense_table`) |
@@ -180,5 +186,6 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ## Migration notes
 
 - Replaced Flask + Jinja + Flask-Login with FastAPI + cookie sessions + static frontend.
-- User metastore migrated from MySQL to local SQLite (`data/metastore.db`). Use `backend/scripts/migrate_mysql_to_sqlite.py` for one-time data import from MySQL.
+- User metastore uses local SQLite (`data/metastore.db`) as primary storage. MySQL remains available as an optional periodic backup target (`MYSQL_BACKUP_ENABLED=true`).
+- Use `backend/scripts/migrate_mysql_to_sqlite.py` for one-time data import from legacy MySQL before cutover.
 - React SPA migration is intentionally deferred; the API is already JSON so a React client can be added later without changing DynamoDB/SQLite logic.

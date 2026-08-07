@@ -1,7 +1,7 @@
 """
 Author: Abhik Pramanik
 Change Date: 2026-08-07
-Change details: Replace MySQL metastore settings with local SQLite file path.
+Change details: Add SQLite primary storage and configurable MySQL backup settings.
 Application configuration for Expense Analyzer.
 Secrets should be provided via environment variables in production.
 Inputs: environment variables and optional ``.env`` file in the backend directory.
@@ -24,6 +24,14 @@ class Settings(BaseSettings):
 
     # SQLite metastore (primary user/password storage)
     sqlite_db_path: str = "data/metastore.db"
+
+    # MySQL metastore (backup target for periodic sync)
+    mysql_host: str = "expenseanalyzer.mysql.pythonanywhere-services.com"
+    mysql_user: str = "expenseanalyzer"
+    mysql_password: str = ""
+    mysql_db: str = "expenseanalyzer$metastore"
+    mysql_backup_enabled: bool = False
+    mysql_backup_interval_seconds: int = 3600
 
     # AWS DynamoDB
     aws_access_key: str = ""
@@ -78,6 +86,18 @@ class Settings(BaseSettings):
         Outputs: Absolute ``Path`` to the SQLite database file.
         """
         return Path(self.sqlite_db_path).resolve()
+
+    @property
+    def mysql_backup_database_uri(self) -> str:
+        """
+        Purpose: Build the SQLAlchemy connection URI for the MySQL backup metastore.
+        Inputs: ``mysql_user``, ``mysql_password``, ``mysql_host``, ``mysql_db`` settings.
+        Outputs: MySQL URI string used by the background backup worker.
+        """
+        return (
+            f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"
+            f"@{self.mysql_host}/{self.mysql_db}"
+        )
 
     @property
     def cors_origin_list(self) -> list[str]:

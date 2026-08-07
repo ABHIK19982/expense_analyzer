@@ -25,6 +25,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.config import get_settings
 from app.database import init_db
 from app.routers import auth, expenses, reports
+from app.services.mysql_backup import MySQLBackupWorker
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
@@ -32,16 +33,21 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """
-    Purpose: Run startup/shutdown hooks for the FastAPI app (initialize DB).
+    Purpose: Run startup/shutdown hooks for the FastAPI app (initialize DB and backup).
     Inputs: ``_app`` — the FastAPI application instance (unused beyond protocol).
     Outputs: async context manager that yields control for the app lifetime.
     """
+    backup_worker = MySQLBackupWorker()
     try:
         init_db()
     except Exception as exc:  # noqa: BLE001
         # Allow the API to start even if SQLite init fails during local UI work.
         print(f"Warning: init_db failed: {exc}")
-    yield
+    await backup_worker.start()
+    try:
+        yield
+    finally:
+        await backup_worker.stop()
 
 
 def create_app() -> FastAPI:
