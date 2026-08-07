@@ -23,12 +23,12 @@ Expense tracking web application with a **FastAPI** JSON backend and a **vanilla
 └──────────┬──────────────────┬───────────┘
            │                  │
            ▼                  ▼
-     MySQL user_details   AWS DynamoDB expense_table
+     SQLite user_details   AWS DynamoDB expense_table
 ```
 
 | Store | Purpose |
 |-------|---------|
-| **MySQL** | User metastore (`user_details`) — auth, profile |
+| **SQLite** | User metastore (`user_details`) — auth, profile (local file) |
 | **AWS DynamoDB** | Expense transactions (`expense_table`) |
 
 ---
@@ -111,7 +111,7 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill i
 
 | Variable | Purpose |
 |----------|---------|
-| `MYSQL_HOST` / `MYSQL_USER` / `MYSQL_PASSWORD` / `MYSQL_DB` | MySQL metastore |
+| `SQLITE_DB_PATH` | Local SQLite metastore file (default `data/metastore.db`) |
 | `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` | DynamoDB credentials |
 | `DB_REGION` | AWS region (default `ap-south-1`) |
 | `TABLE_NAME` | DynamoDB table (default `expense_table`) |
@@ -126,7 +126,7 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill i
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (install via `curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- MySQL with `user_details` (created via `init_db` on startup when reachable)
+- SQLite file metastore (created via `init_db` on startup; default `backend/data/metastore.db`)
 - DynamoDB table `expense_table` in the configured region
 
 ### Local development
@@ -157,7 +157,7 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ## Data model (unchanged)
 
-### MySQL — `user_details`
+### SQLite — `user_details`
 
 `u_key`, `uid`, `username`, `password` (bcrypt), `first_name`, `last_name`, `email`, `family_size`, `create_date`, `end_date`, `active`
 
@@ -180,4 +180,5 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ## Migration notes
 
 - Replaced Flask + Jinja + Flask-Login with FastAPI + cookie sessions + static frontend.
-- React SPA migration is intentionally deferred; the API is already JSON so a React client can be added later without changing DynamoDB/MySQL logic.
+- User metastore migrated from MySQL to local SQLite (`data/metastore.db`). Use `backend/scripts/migrate_mysql_to_sqlite.py` for one-time data import from MySQL.
+- React SPA migration is intentionally deferred; the API is already JSON so a React client can be added later without changing DynamoDB/SQLite logic.

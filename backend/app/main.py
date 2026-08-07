@@ -39,7 +39,7 @@ async def lifespan(_app: FastAPI):
     try:
         init_db()
     except Exception as exc:  # noqa: BLE001
-        # Allow the API to start even if MySQL is unreachable during local UI work.
+        # Allow the API to start even if SQLite init fails during local UI work.
         print(f"Warning: init_db failed: {exc}")
     yield
 

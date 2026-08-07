@@ -1,4 +1,4 @@
-"""SQLAlchemy User model (MySQL metastore)."""
+"""SQLAlchemy User model (SQLite metastore)."""
 
 from __future__ import annotations
 
