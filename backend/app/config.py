@@ -1,25 +1,37 @@
-"""Application configuration.
-
+"""
+Author: Abhik Pramanik
+Change Date: 2026-08-07
+Change details: Add SQLite primary storage and configurable MySQL backup settings.
+Application configuration for Expense Analyzer.
 Secrets should be provided via environment variables in production.
-Defaults match the previous Flask configs/keys.py placeholders.
+Inputs: environment variables and optional ``.env`` file in the backend directory.
+Outputs: ``Settings`` instance via ``get_settings()`` with database URI and app options.
 """
 
 from __future__ import annotations
 
 import os
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # MySQL metastore
+    # SQLite metastore (primary user/password storage)
+    sqlite_db_path: str = "data/metastore.db"
+
+    # MySQL metastore (backup target for periodic sync)
     mysql_host: str = "expenseanalyzer.mysql.pythonanywhere-services.com"
     mysql_user: str = "expenseanalyzer"
     mysql_password: str = ""
     mysql_db: str = "expenseanalyzer$metastore"
+    mysql_backup_enabled: bool = False
+    mysql_backup_interval_seconds: int = 3600
 
     # AWS DynamoDB
     aws_access_key: str = ""
@@ -58,6 +70,30 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_uri(self) -> str:
+        """
+        Purpose: Build the SQLAlchemy connection URI for the local SQLite metastore.
+        Inputs: ``sqlite_db_path`` setting (resolved to an absolute path).
+        Outputs: SQLite URI string, e.g. ``sqlite:////abs/path/to/metastore.db``.
+        """
+        path = Path(self.sqlite_db_path).resolve()
+        return f"sqlite:///{path}"
+
+    @property
+    def sqlite_db_file(self) -> Path:
+        """
+        Purpose: Return the resolved filesystem path to the SQLite database file.
+        Inputs: ``sqlite_db_path`` setting.
+        Outputs: Absolute ``Path`` to the SQLite database file.
+        """
+        return Path(self.sqlite_db_path).resolve()
+
+    @property
+    def mysql_backup_database_uri(self) -> str:
+        """
+        Purpose: Build the SQLAlchemy connection URI for the MySQL backup metastore.
+        Inputs: ``mysql_user``, ``mysql_password``, ``mysql_host``, ``mysql_db`` settings.
+        Outputs: MySQL URI string used by the background backup worker.
+        """
         return (
             f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"
             f"@{self.mysql_host}/{self.mysql_db}"
@@ -65,6 +101,11 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
+        """
+        Purpose: Parse comma-separated CORS origins into a list.
+        Inputs: ``cors_origins`` setting string.
+        Outputs: List of origin URL strings.
+        """
         if self.cors_origins.strip() == "*":
             return ["*"]
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -72,4 +113,9 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """
+    Purpose: Return a cached singleton ``Settings`` instance.
+    Inputs: None (reads from environment / ``.env``).
+    Outputs: ``Settings`` instance.
+    """
     return Settings()
