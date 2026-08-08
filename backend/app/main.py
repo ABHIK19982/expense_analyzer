@@ -111,11 +111,20 @@ def run() -> None:
     """
     Purpose: Start the uvicorn ASGI server for local development.
     Inputs: None (host/port/reload are fixed for local use).
-    Outputs: None; blocks while serving HTTP on 127.0.0.1:8000 with reload.
+    Outputs: None; blocks while serving HTTP on 127.0.0.1:8000 with reload
+             scoped to the ``app`` package directory only.
     """
     import uvicorn
 
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    app_dir = Path(__file__).resolve().parent
+
+    uvicorn.run(
+        "app.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        reload_dirs=[str(app_dir)],
+    )
 
 
 app = create_app()

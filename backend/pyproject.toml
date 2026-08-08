@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-expense-api = "app.main:run"
+expense-api = "expense_api:run"
 
 [build-system]
 requires = ["hatchling"]
@@ -28,6 +28,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"expense_api.py" = "expense_api.py"
 
 [tool.uv]
 package = true
